@@ -6,7 +6,7 @@ protocol MainHelping {
 
 final class MainHelper<StateType, IO: IOContaining>: MainHelping {
     
-    typealias ProcessFunctionType = (IO.Outputs, (IO.Inputs, UInt) -> Void) -> Void
+    typealias ProcessFunctionType = (IO.Outputs, @escaping (IO.Inputs, UInt) -> Void) -> Void
     
     init(topLevelFunction: @escaping (StateType, IO) -> (StateType, IO),
          initialState: StateType,
@@ -27,7 +27,7 @@ final class MainHelper<StateType, IO: IOContaining>: MainHelping {
         }
     }
     
-    static func process<T: IOHandling>(outputs: [(T.IO.Output, IOToken<T.IO>)], handler: T, inputAndTokenIdClosure: (T.IO.Input, UInt) -> Void) {
+    static func process<T: IOHandling>(outputs: [(T.IO.Output, IOToken<T.IO>)], handler: T, inputAndTokenIdClosure: @escaping (T.IO.Input, UInt) -> Void) {
         outputs.forEach { [weak handler] (output, token) in
             handler?.handle(output: output, token: token) { inputAndTokenIdClosure($0, token.id) }
         }

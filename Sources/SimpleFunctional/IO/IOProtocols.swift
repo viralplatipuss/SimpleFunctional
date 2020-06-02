@@ -7,7 +7,7 @@ public protocol IOHandling: class {
     associatedtype IO: IOType
     
     /// Implement to handle an output and generate an input, if needed.
-    func handle(output: IO.Output, token: IOToken<IO>, inputClosure: (IO.Input) -> Void)
+    func handle(output: IO.Output, token: IOToken<IO>, inputClosure: @escaping (IO.Input) -> Void)
     
     /// Create the handler.
     init()
