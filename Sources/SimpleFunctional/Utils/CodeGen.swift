@@ -20,7 +20,7 @@ public struct CodeGen {
         import Foundation
         
         public extension MainFactory {
-            static func createMain<StateType, \(handlers(suffix: ": IOHandling"))>(topLevelFunction: @escaping (StateType, \(containerGenerics)) -> (StateType, \(containerGenerics)),
+            static func createMain<StateType, \(handlers(suffix: ": IOHandling"))>(topLevelFunction: @escaping (StateType, \(containerGenerics)) -> (StateType, \(containerGenerics))?,
                                                                                                      initialState: StateType,
                                                                                                      handlerTypes: (\(handlers(suffix: ".Type")))) -> Main {
                 typealias IO = \(containerGenerics)

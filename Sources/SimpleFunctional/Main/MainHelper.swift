@@ -8,7 +8,7 @@ final class MainHelper<StateType, IO: IOContaining>: MainHelping {
     
     typealias ProcessFunctionType = (IO.Outputs, @escaping (IO.Inputs, UInt) -> Void) -> Void
     
-    init(topLevelFunction: @escaping (StateType, IO) -> (StateType, IO),
+    init(topLevelFunction: @escaping (StateType, IO) -> (StateType, IO)?,
          initialState: StateType,
          initialIO: IO,
          processFunction: @escaping ProcessFunctionType) {
@@ -39,7 +39,7 @@ final class MainHelper<StateType, IO: IOContaining>: MainHelping {
     private let mainQueue = DispatchQueue(label: "main", qos: .userInteractive)
     private let concurrentQueue = DispatchQueue(label: "concurrent", attributes: .concurrent)
     
-    private let topLevelFunction: (StateType, IO) -> (StateType, IO)
+    private let topLevelFunction: (StateType, IO) -> (StateType, IO)?
     private let processFunction: ProcessFunctionType
     
     private var didStart = false
@@ -47,7 +47,7 @@ final class MainHelper<StateType, IO: IOContaining>: MainHelping {
     private var state: StateType
     
     private func run() {
-        let result = topLevelFunction(state, io)
+        let result = topLevelFunction(state, io) ?? (state, io)
         state = result.0
         io = result.1
         

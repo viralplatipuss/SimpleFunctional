@@ -1,5 +1,13 @@
 import Foundation
 
+/// Represents a type of IO. Each IO type should inherit this protocol and define its own input and output structs.
+public protocol IOType {
+    
+    associatedtype Input
+    
+    associatedtype Output
+}
+
 /// IO handlers confrom to this protocol in order to handle incoming outputs and return inputs.
 public protocol IOHandling: class {
     
@@ -13,13 +21,8 @@ public protocol IOHandling: class {
     init()
 }
 
-/// Represents a type of IO. Each IO type should inherit this protocol and define its own input and output structs.
-public protocol IOType {
-    
-    associatedtype Input
-    
-    associatedtype Output
-}
+
+// MARK: - Internal
 
 protocol IOContaining {
     associatedtype Inputs

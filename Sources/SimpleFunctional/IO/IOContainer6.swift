@@ -1,7 +1,7 @@
 import Foundation
 
 public extension MainFactory {
-    static func createMain<StateType, H0: IOHandling, H1: IOHandling, H2: IOHandling, H3: IOHandling, H4: IOHandling, H5: IOHandling>(topLevelFunction: @escaping (StateType, IOContainer6<H0.IO, H1.IO, H2.IO, H3.IO, H4.IO, H5.IO>) -> (StateType, IOContainer6<H0.IO, H1.IO, H2.IO, H3.IO, H4.IO, H5.IO>),
+    static func createMain<StateType, H0: IOHandling, H1: IOHandling, H2: IOHandling, H3: IOHandling, H4: IOHandling, H5: IOHandling>(topLevelFunction: @escaping (StateType, IOContainer6<H0.IO, H1.IO, H2.IO, H3.IO, H4.IO, H5.IO>) -> (StateType, IOContainer6<H0.IO, H1.IO, H2.IO, H3.IO, H4.IO, H5.IO>)?,
                                                                                                                                       initialState: StateType,
                                                                                                                                       handlerTypes: (H0.Type, H1.Type, H2.Type, H3.Type, H4.Type, H5.Type)) -> Main {
         typealias IO = IOContainer6<H0.IO, H1.IO, H2.IO, H3.IO, H4.IO, H5.IO>
