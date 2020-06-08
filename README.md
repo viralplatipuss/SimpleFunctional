@@ -14,7 +14,7 @@ There is also an **Example.swift** file in this package.
 
 ## Overview
 
-ADD DIAGRAM
+![Overview Diagram](https://github.com/viralplatipuss/SimpleFunctional/blob/master/Overview-diagram.png)
 
 Rather than using Rx/Combine patterns, the idea is simply to have a pure "App". A struct with all immutable properties, that has a run() function which will take an input (a simple, also immutable, value-type), and return an updated copy of the App, along with any desired outputs (also immutable value-types).
 
