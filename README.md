@@ -2,9 +2,7 @@
 
 A simple framework for building pure functional apps in Swift.
 
-The framework is designed to make software very simple and easy to reason about by completely detaching IO events and other side-effects from logic. It assumes you have an understanding of pure functional code, and the importance of decoupling IO and side-effects.
-
-If you are unfamiliar with the concept of pure functional code, [read this](https://medium.com/better-programming/what-is-a-pure-function-3b4af9352f6f).
+The framework is designed to make software very simple and easy to reason about by decoupling IO events and other side-effects from logic. It assumes you have an understanding of pure functional code. If you are unfamiliar with the concept, [read this](https://medium.com/better-programming/what-is-a-pure-function-3b4af9352f6f).
 
 ## Examples
 
@@ -20,7 +18,7 @@ Rather than using Rx/Combine patterns, the idea is simply to have a pure "App". 
 
 Obviously, it's impossible to create most applications this way. As a lot of APIs, especially around UI, are not functionally pure. That's why we have an ImpureApp to manage the App and handle/provide it's IO using IO Handlers.
 
-IO Handlers are not functionally pure. They can handle the IO requests using imperative, stateful code. Such as some of the default Apple libraries.
+IO Handlers are not functionally pure. They can handle the IO requests using imperative, stateful code. Such as wrapping some of the default Apple libraries.
 
 The ImpureApp hides the IO handlers from the pure app, by only communicating with it via the IO types. Immutable value-types that represent input and output.
 
@@ -28,9 +26,9 @@ First the app is run with no input. The outputs of which are handled, and if any
 
 If the function does not request any outputs for the previous input, and no previous outputs are processing, the application ends, as you'd expect from a typical main function.
 
-Note: The app is always run on the same thread, but IO handlers are called on a concurrent queue and should manage their own thread-safety.
+**Note:** The app is always run on the same thread, but IO handlers are called on a concurrent queue and should manage their own thread-safety.
 
-The entire application is pure functional code, using immutable, value types. There are no classes, reference types, or threads to deal with. Just a logical function with input/output. The immutable value type also mean that everything is by default thread-safe! But running something on another thread should be done using an IO handler.
+The end result is an app written in pure functional code, using immutable, value types. There are no classes, reference types, or threads to deal with. Just a logical function with input/output. The immutable value types also mean that everything is thread-safe by default!
 
 **This is a very simple back-to-basics approach to writing functional software. This library doesn't provide any architecture for your app itself, but a simple framework so that most of your app's code can be functionally pure. Obviously a lot more work is required to achieve even basic functionality that comes with a lot of existing Apple libraries. Mainly by wrapping everything you want to use in an IOHandler to provide it in a functional way. However, I am attempting to use this approach to develop complex software and will open source generalized IOHandlers as I create them.**
 
@@ -45,6 +43,9 @@ Or you can add the dependency directly to your **Package.swift**
 .package(url: "https://github.com/viralplatipuss/SimpleFunctional.git", .exact("0.0.7"))
 ```
 
+It only uses foundational Swift, so it is platform-agnostic. You can use it in things like [Vapor](https://github.com/vapor/vapor/).
+
+
 ### Set Up
 
 See **Example.swift**
@@ -52,7 +53,7 @@ See **Example.swift**
 First, you want to define (or use existing) IO types that your application needs to function.
 
 You can do this by creating new IO structs that conform to the IO protocol. 
-These should be immutable, functionally pure value types. Any sub-types should also be the same. 
+These should be immutable, functionally pure value types, as well as any sub-types.
 
 For example, a console IO type, so the app can request to print messages to the console, with an input for when a message is printed:
 
@@ -140,20 +141,21 @@ struct App: PureAppProviding {
 }
 ```
 
-Your app should also be an immutable value-type. 
-This one checks for an input (as only the very first run of the app function will have a nil input), and if no input is found, request hello world be printed to the console.
+Your app should be an immutable value-type. 
+This one checks for an input (as only the very first run of the app function will have a nil input), and if no input is found, request "Hello World!" be printed to the console.
 It does not update the state of the app, but usually would. See the [weather app](https://github.com/viralplatipuss/SimpleFunctionalWeather/) for a better example. 
 
 You want your run function to process the current state and possible input, and return any desired outputs **as fast as possible**. This function is the basis of your application and will be run, sychronously, every time there is a new input.
 It should not do any async operations, handle timing, or block the thread it's running on in any way.
 
-However, one of the biggest benefits to writing pure functional code with immutable value types only is that it makes multi-threading incredibly easy and safe. To take advantage of that, I would create an AsyncIO type that can run a pure functional closure on a background thread within an IO Handler. The result being passed back to the top-level function as an input. The closure can happily capture any state from within the run function, as it's all immutable and thread-safe!
+However, one of the biggest benefits to writing pure functional code with immutable value types only, is that it makes multi-threading incredibly easy and safe. To take advantage of that, I would create an AsyncIO type that can run a pure functional closure on a background thread within an IO Handler. The result being passed back to the top-level function as an input. The closure can capture any state from within the run function, as it's all immutable and thread-safe!
 
 An example could be a game, where the run function updates the world state and adds it to the IO as a rendering output. Then an IO Handler can render it to the screen on a different thread, while the run function could already be running again to process the next world state, as both threads can use the previous world state at the same time.
 
 
-Finally, we need to create the **ImpureApp**. This is the top level class for your application, that runs your pure app, but also handles the imperative IO code.
-This should be created and started as early as possible. Usually in **AppDelegate.swift** or ***main.swift** in cases like Vapor apps. 
+Finally, we need to create the **ImpureApp**. This is a generic top level class for your application, that runs a pure app and handles IO.
+
+This should be created and started as early as possible. Usually in **AppDelegate.swift** or **main.swift** in cases like Vapor apps. 
 You'll want to hold a strong reference to the **impureApp** for the duration of the application's lifecycle.
 Call **start()** to begin the app.
 
