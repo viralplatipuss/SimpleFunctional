@@ -11,6 +11,7 @@
 		818CC59A248DA8EB006CF22C /* IO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 818CC599248DA8EB006CF22C /* IO.swift */; };
 		818CC59C248DB183006CF22C /* IOHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 818CC59B248DB183006CF22C /* IOHandling.swift */; };
 		818CC59E248DB1CE006CF22C /* PureAppProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 818CC59D248DB1CE006CF22C /* PureAppProviding.swift */; };
+		818CC5AA248DBA5F006CF22C /* Example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 818CC5A9248DBA5F006CF22C /* Example.swift */; };
 		OBJ_61 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 /* End PBXBuildFile section */
 
@@ -19,6 +20,7 @@
 		818CC599248DA8EB006CF22C /* IO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IO.swift; sourceTree = "<group>"; };
 		818CC59B248DB183006CF22C /* IOHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOHandling.swift; sourceTree = "<group>"; };
 		818CC59D248DB1CE006CF22C /* PureAppProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PureAppProviding.swift; sourceTree = "<group>"; };
+		818CC5A9248DBA5F006CF22C /* Example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Example.swift; sourceTree = "<group>"; };
 		OBJ_32 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		"SimpleFunctional::SimpleFunctional::Product" /* SimpleFunctional.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SimpleFunctional.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -35,6 +37,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		818CC5A7248DBA38006CF22C /* Impure */ = {
+			isa = PBXGroup;
+			children = (
+				818CC597248DA7EC006CF22C /* ImpureApp.swift */,
+				818CC59B248DB183006CF22C /* IOHandling.swift */,
+			);
+			path = Impure;
+			sourceTree = "<group>";
+		};
+		818CC5A8248DBA46006CF22C /* Pure */ = {
+			isa = PBXGroup;
+			children = (
+				818CC59D248DB1CE006CF22C /* PureAppProviding.swift */,
+				818CC599248DA8EB006CF22C /* IO.swift */,
+			);
+			path = Pure;
+			sourceTree = "<group>";
+		};
 		OBJ_29 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -73,10 +93,9 @@
 		OBJ_8 /* SimpleFunctional */ = {
 			isa = PBXGroup;
 			children = (
-				818CC597248DA7EC006CF22C /* ImpureApp.swift */,
-				818CC59D248DB1CE006CF22C /* PureAppProviding.swift */,
-				818CC599248DA8EB006CF22C /* IO.swift */,
-				818CC59B248DB183006CF22C /* IOHandling.swift */,
+				818CC5A7248DBA38006CF22C /* Impure */,
+				818CC5A8248DBA46006CF22C /* Pure */,
+				818CC5A9248DBA5F006CF22C /* Example.swift */,
 			);
 			name = SimpleFunctional;
 			path = Sources/SimpleFunctional;
@@ -149,6 +168,7 @@
 			files = (
 				818CC59C248DB183006CF22C /* IOHandling.swift in Sources */,
 				818CC598248DA7EC006CF22C /* ImpureApp.swift in Sources */,
+				818CC5AA248DBA5F006CF22C /* Example.swift in Sources */,
 				818CC59E248DB1CE006CF22C /* PureAppProviding.swift in Sources */,
 				818CC59A248DA8EB006CF22C /* IO.swift in Sources */,
 			);
