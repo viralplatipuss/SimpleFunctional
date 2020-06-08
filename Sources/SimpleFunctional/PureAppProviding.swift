@@ -2,7 +2,8 @@ import Foundation
 
 /// Represents a pure app, that can be run with IO.
 public protocol PureAppProviding {
-    associatedtype IOType: IO
+    associatedtype Input
+    associatedtype Output
     
-    func run(input: IOType.Input?) -> (app: Self, outputs: [IOType.Output])?
+    func run(input: Input?) -> (app: Self, outputs: [Output])?
 }
