@@ -2,23 +2,38 @@
 
 A simple framework for building pure functional apps in Swift.
 
-The framework is designed to make software very simple and easy to reason about by completely detaching IO events and other side-effects from pure logic. It assumes you have an understanding of pure functional code, and the importance of decoupling IO and side-effects.
+The framework is designed to make software very simple and easy to reason about by completely detaching IO events and other side-effects from logic. It assumes you have an understanding of pure functional code, and the importance of decoupling IO and side-effects.
 
-Rather than using Rx/Combine patterns, the app is simply an immutable value type with a single run function, that takes an input, and returns a new app state and any desired outputs.
-
-Input-Outputs for your application can be handled by creating IO Handlers.
-
-Every time your pure function runs, the IO Handlers (messy, stateful, imperative code that lives outside of your pure functional world) process the outputs. When one of those outputs produces an input, the function is run again with that input. Other inputs, if any, are queued up to be synchronously run after.
-
-If the function does not request any outputs for the previous input, and no previous outputs are processing, the application ends, as you'd expect from a typical main function.
-
-**This is a very simple back-to-basics approach to writing functional software. This library doesn't provide any architecture for your app itself, but a simple framework so that most of your app's code can be pure functional. Obviously a lot more work is required to achieve even basic functionality that comes with a lot of existing Apple libraries. Mainly by wrapping everything you want to use in an IOHandler to provide it in a functional way. However, I am attempting to use this approach to develop complex software and will open source generalized IOHandlers as I create them.**
+If you are unfamiliar with the concept of pure functional code, [read this](https://medium.com/better-programming/what-is-a-pure-function-3b4af9352f6f).
 
 ## Examples
 
 Check out the [SimpleFunctional Weather app](https://github.com/viralplatipuss/SimpleFunctionalWeather/), it's terrible, but it'll show you the library in action.
 
 There is also an **Example.swift** file in this package.
+
+## Overview
+
+ADD DIAGRAM
+
+Rather than using Rx/Combine patterns, the idea is simply to have a pure "App". A struct with all immutable properties, that has a run() function which will take an input (a simple, also immutable, value-type), and return an updated copy of the App, along with any desired outputs (also immutable value-types).
+
+Obviously, it's impossible to create most applications this way. As a lot of APIs, especially around UI, are not functionally pure. That's why we have an ImpureApp to manage the App and handle/provide it's IO using IO Handlers.
+
+IO Handlers are not functionally pure. They can handle the IO requests using imperative, stateful code. Such as some of the default Apple libraries.
+
+The ImpureApp hides the IO handlers from the pure app, by only communicating with it via the IO types. Immutable value-types that represent input and output.
+
+First the app is run with no input. The outputs of which are handled, and if any inputs are generated from those outputs, the function is run again for each of those inputs individually, sychronously.
+
+If the function does not request any outputs for the previous input, and no previous outputs are processing, the application ends, as you'd expect from a typical main function.
+
+Note: The app is always run on the same thread, but IO handlers are called on a concurrent queue and should manage their own thread-safety.
+
+The entire application is pure functional code, using immutable, value types. There are no classes, reference types, or threads to deal with. Just a logical function with input/output. The immutable value type also mean that everything is by default thread-safe! But running something on another thread should be done using an IO handler.
+
+**This is a very simple back-to-basics approach to writing functional software. This library doesn't provide any architecture for your app itself, but a simple framework so that most of your app's code can be functionally pure. Obviously a lot more work is required to achieve even basic functionality that comes with a lot of existing Apple libraries. Mainly by wrapping everything you want to use in an IOHandler to provide it in a functional way. However, I am attempting to use this approach to develop complex software and will open source generalized IOHandlers as I create them.**
+
 
 ## Usage
 
@@ -27,7 +42,7 @@ SimpleFunctional is a Swift package. Use your preferred package manager.
 I like to use Xcode's built-in tool under **File > Swift Packages**
 Or you can add the dependency directly to your **Package.swift**
 ```swift
-.package(url: "https://github.com/viralplatipuss/SimpleFunctional.git", .exact("0.0.6"))
+.package(url: "https://github.com/viralplatipuss/SimpleFunctional.git", .exact("0.0.7"))
 ```
 
 ### Set Up
@@ -158,6 +173,10 @@ And that's it. Now you can start building out your pure functional app!
 
 
 ## Q&A
+
+### What is pure functional code?
+
+- There's plenty to read online elsewhere. Like [here](https://medium.com/better-programming/what-is-a-pure-function-3b4af9352f6f).
 
 #### This is pretty simplistic, how am I supposed to build complicated applications out of this?
 
