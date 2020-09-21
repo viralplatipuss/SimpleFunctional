@@ -69,7 +69,7 @@ struct ConsoleIO: IO {
 }
 ```
 
-To actually handle this IO type, we need to create an IO Handler. Impreative, impure code, that lives outside of our application. These should be subclasses of the BaseIOHandler.
+To actually handle this IO type, we need to create an IO Handler. Impreative, impure code, that lives outside of our application. These should be subclasses of BaseIOHandler.
 
 ```swift
 final class ConsoleIOHandler: BaseIOHandler<ConsoleIO> {
