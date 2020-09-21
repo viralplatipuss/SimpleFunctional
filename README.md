@@ -69,17 +69,16 @@ struct ConsoleIO: IO {
 }
 ```
 
-To actually handle this IO type, we need to create an IO Handler. Impreative, impure code, that lives outside of our application. These can and usually should be reference types / classes.
+To actually handle this IO type, we need to create an IO Handler. Impreative, impure code, that lives outside of our application. These should be subclasses of the BaseIOHandler.
 
 ```swift
-final class ConsoleIOHandler: IOHandling {
-    typealias IOType = ConsoleIO
+final class ConsoleIOHandler: BaseIOHandler<ConsoleIO> {
     
-    func handle(output: IOType.Output, inputClosure: @escaping (IOType.Input) -> Void) {
+    override func handle(output: Output) {
         switch output {
         case .print(let message):
             print(message)
-            inputClosure(.didPrint(message: message))
+            runInput(.didPrint(message: message))
         }
     }
 }
@@ -94,11 +93,8 @@ If you have more than one IO type/handler, you'll want to make an IO type and ha
 
 struct AppIO: IO {
     
-    typealias IOA = ConsoleIO
-    typealias IOB = ExampleIO
-    
-    typealias Input = IO<IOA.Input, IOB.Input>
-    typealias Output = IO<IOA.Output, IOB.Output>
+    typealias Input = IO<ConsoleIO.Input, ExampleIO.Input>
+    typealias Output = IO<ConsoleIO.Output, ExampleIO.Output>
     
     enum IO<A, B> {
         case console(A)
@@ -106,18 +102,23 @@ struct AppIO: IO {
     }
 }
 
-final class AppIOHandler: IOHandling {
-    typealias IOType = AppIO
+final class AppIOHandler: BaseIOHandler<AppIO> {
     
-    func handle(output: IOType.Output, inputClosure: @escaping (IOType.Input) -> Void) {
+    override init(runInputClosure: @escaping (Input) -> Void) {
+        consoleHandler = ConsoleIOHandler(runInputClosure: { runInputClosure(.console($0)) })
+        exampleHandler = ExampleIOHandler(runInputClosure: { runInputClosure(.example($0)) })
+        super.init(runInputClosure: runInputClosure)
+    }
+    
+    override func handle(output: Output) {
         switch output {
-        case .console(let o): return consoleHandler.handle(output: o, inputClosure: { inputClosure(.console($0)) })
-        case .example(let o): return exampleHandler.handle(output: o, inputClosure: { inputClosure(.example($0)) })
+        case let .console(o): consoleHandler.handle(output: o)
+        case let .example(o): exampleHandler.handle(output: o)
         }
     }
     
-    private let consoleHandler = ConsoleIOHandler()
-    private let exampleHandler = ExampleIOHandler()
+    private let consoleHandler: ConsoleIOHandler
+    private let exampleHandler: ExampleIOHandler
 }
 ```
 
@@ -128,8 +129,7 @@ Now, we want to create our functionally pure app itself! In this case, it's a ve
 ```swift
 struct App: PureAppProviding {
     
-    typealias Input = AppIO.Input
-    typealias Output = AppIO.Output
+    typealias IOType = AppIO
     
     func run(input: Input?) -> (app: Self, outputs: [Output])? {
         guard let _ = input else {
