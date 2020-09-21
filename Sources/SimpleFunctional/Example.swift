@@ -16,27 +16,25 @@
 // MARK: - IO Handlers
 
 /// A sample IO Handler that allows the app to request printing something to the console.
-final class ConsoleIOHandler: IOHandling {
-    typealias IOType = ConsoleIO
+final class ConsoleIOHandler: BaseIOHandler<ConsoleIO> {
     
-    func handle(output: IOType.Output, inputClosure: @escaping (IOType.Input) -> Void) {
+    override func handle(output: Output) {
         switch output {
         case .print(let message):
             print(message)
-            inputClosure(.didPrint(message: message))
+            runInput(.didPrint(message: message))
         }
     }
 }
 
 /// Another sample IO Handler, for handling timers.
-final class TimerIOHandler: IOHandling {
-    typealias IOType = TimerIO
+final class TimerIOHandler: BaseIOHandler<TimerIO> {
     
-    func handle(output: IOType.Output, inputClosure: @escaping (IOType.Input) -> Void) {
+    override func handle(output: Output) {
         guard case let IOType.Output.addTimer(id, milliseconds) = output else { return }
         
-        queue.asyncAfter(deadline: .now() + .milliseconds(Int(milliseconds))) {
-            inputClosure(.timerFired(id: id))
+        queue.asyncAfter(deadline: .now() + .milliseconds(Int(milliseconds))) { [weak self] in
+            self?.runInput(.timerFired(id: id))
         }
     }
     
@@ -45,18 +43,23 @@ final class TimerIOHandler: IOHandling {
 
 /// The IO handler for the app itself, which contains all the other IO handlers.
 /// This approach can also be used to create sub-IO Handlers within IO Handlers.
-final class AppIOHandler: IOHandling {
-    typealias IOType = AppIO
+final class AppIOHandler: BaseIOHandler<AppIO> {
     
-    func handle(output: IOType.Output, inputClosure: @escaping (IOType.Input) -> Void) {
+    override init(runInputClosure: @escaping (Input) -> Void) {
+        consoleHandler = ConsoleIOHandler(runInputClosure: { runInputClosure(.console($0)) })
+        timerHandler = TimerIOHandler(runInputClosure: { runInputClosure(.timer($0)) })
+        super.init(runInputClosure: runInputClosure)
+    }
+    
+    override func handle(output: Output) {
         switch output {
-        case .console(let o): return consoleHandler.handle(output: o, inputClosure: { inputClosure(.console($0)) })
-        case .timer(let o): return timerHandler.handle(output: o, inputClosure: { inputClosure(.timer($0)) })
+        case let .console(o): consoleHandler.handle(output: o)
+        case let .timer(o): timerHandler.handle(output: o)
         }
     }
     
-    private let consoleHandler = ConsoleIOHandler()
-    private let timerHandler = TimerIOHandler()
+    private let consoleHandler: ConsoleIOHandler
+    private let timerHandler: TimerIOHandler
 }
 
 // MARK - Impure App
@@ -64,12 +67,12 @@ final class AppIOHandler: IOHandling {
 // Create and start an impure app, wrapping the pure app and the app's IO handler.
 // This should be done as early in the application as possible, with the impureApp property being kept alive by the AppDelegate or similar.
 
-// let impureApp = ImpureApp(pureApp: App(), ioHandler: AppIOHandler())
+// let impureApp = ImpureApp(pureApp: App(), ioHandlerBuilder: { AppIOHandler(runInputClosure: $0) })
 // impureApp.start()
 
 
 
-// MARK: - Pure
+// MARK: - Pure Code
 
 // All the following code is functionally pure. It exists mainly with structs using no mutable state.
 // As much of your application as possible should be functionally pure and separated from impure code.
@@ -101,11 +104,8 @@ struct TimerIO: IO {
 /// The IO type for the whole App, containing the other IO types.
 struct AppIO: IO {
     
-    typealias IOA = ConsoleIO
-    typealias IOB = TimerIO
-    
-    typealias Input = IO<IOA.Input, IOB.Input>
-    typealias Output = IO<IOA.Output, IOB.Output>
+    typealias Input = IO<ConsoleIO.Input, TimerIO.Input>
+    typealias Output = IO<ConsoleIO.Output, TimerIO.Output>
     
     enum IO<A, B> {
         case console(A)
@@ -117,12 +117,10 @@ struct AppIO: IO {
 
 /// The functionally pure entry point for the application.
 struct App: PureAppProviding {
-    
-    typealias Input = AppIO.Input
-    typealias Output = AppIO.Output
+    typealias IOType = AppIO
     
     /// The run function is called with an input, and returns an updated app and any outputs to request.
-    /// The outputs are then run in the impure code outside of this app, which will then run this function again with any inputs that are generated.
+    /// The outputs are then run in the impure code outside of this app, which will then run this function again on the new app state, with any inputs that were generated.
     func run(input: Input?) -> (app: Self, outputs: [Output])? {
         guard let _ = input else {
             return (self, [.console(.print(message: "Hello World!"))])

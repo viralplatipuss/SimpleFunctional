@@ -1,6 +1,6 @@
 import Foundation
 
-/// The IO protocol defines an IO type.
+/// A protocol that represents input and output.
 public protocol IO {
     associatedtype Input
     associatedtype Output
