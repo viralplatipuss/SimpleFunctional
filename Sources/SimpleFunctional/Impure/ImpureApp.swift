@@ -11,8 +11,7 @@ public final class ImpureApp<AppType: PureAppProviding, IOHandlerType: IOHandlin
     
     /// Creates the impure app with a starting pure app state, and a function for building an ioHandler to deal with input-output.
     /// The ioHandler will be created from the builder during this init.
-    public init(pureApp: AppType, ioHandlerBuilder: (@escaping RunInputClosure) -> IOHandlerType) {
-        self.pureApp = pureApp
+    public init(pureAppType: AppType.Type, ioHandlerBuilder: (@escaping RunInputClosure) -> IOHandlerType) {
         ioHandler = ioHandlerBuilder({ [weak self] in self?.run(input: $0) })
     }
     
@@ -22,33 +21,39 @@ public final class ImpureApp<AppType: PureAppProviding, IOHandlerType: IOHandlin
         guard !didStart else { return }
         didStart = true
         
-        run(input: nil)
+        appQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            let (app, outputs) = AppType.start()
+            self.pureApp = app
+            self.processOutputs(outputs)
+        }
     }
     
     
     // MARK: - Private
 
     private var didStart = false
-    private var pureApp: AppType
+    private var pureApp: AppType? = nil
     private var ioHandler: IOHandlerType?
     
     private let appQueue = DispatchQueue(label: "ImpureApp.appQueue", qos: .userInteractive)
     private let ioQueue = DispatchQueue(label: "ImpureApp.ioQueue", qos: .userInitiated, attributes: .concurrent)
-    
-    private func run(input: AppType.Input?) {
+
+    private func run(input: AppType.Input) {
         appQueue.async { [weak self] in
-            guard let (app, outputs) = self?.pureApp.run(input: input) else { return }
-            self?.pureApp = app
+            guard let self = self, let (app, outputs) = self.pureApp?.run(input: input) else { return }
             
-            self?.ioQueue.async { [weak self] in
-                self?.processOutputs(outputs)
-            }
+            self.pureApp = app
+            self.processOutputs(outputs)
         }
     }
     
     private func processOutputs(_ outputs: [AppType.Output]) {
-        outputs.forEach { [weak self] in
-            self?.ioHandler?.handle(output: $0)
+        ioQueue.async {
+            outputs.forEach { [weak self] in
+                self?.ioHandler?.handle(output: $0)
+            }
         }
     }
 }

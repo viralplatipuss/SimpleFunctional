@@ -124,28 +124,30 @@ final class AppIOHandler: BaseIOHandler<AppIO> {
 
 These wrap the other types and handlers, so they're accessible through a single interface, as the ImpureApp class only handles one IO type and handler for the app.
 
-Now, we want to create our functionally pure app itself! In this case, it's a very simple "Hello World" application:
+Now, we want to create our functionally pure app itself! In this case, it's a very simple "Hello, World!" application:
 
 ```swift
 struct App: PureAppProviding {
     
     typealias IOType = AppIO
     
-    func run(input: Input?) -> (app: Self, outputs: [Output])? {
-        guard let _ = input else {
-            return (self, [.console(.print(message: "Hello World!"))])
-        }
-        
-        return nil
+    static func start() -> AppAndOutputs {
+        (App(), [.console(.print(message: "Hello, World!"))])
+    }
+    
+    func run(input: Input) -> AppAndOutputs {
+        (self, [])
     }
 }
 ```
 
 Your app should be an immutable value-type. 
-This one checks for an input (as only the very first run of the app function will have a nil input), and if no input is found, request "Hello World!" be printed to the console.
-It does not update the state of the app, but usually would. See the [weather app](https://github.com/viralplatipuss/SimpleFunctionalWeather/) for a better example. 
+This one will immediately request "Hello, World!" be printed to the console on start.
+As our app doesn't do anything more than that, the run function will never be called with an input. 
+However, if the start() function had requested outputs that generated inputs, those would be then be run via the run(input:) function. 
+See the [weather app](https://github.com/viralplatipuss/SimpleFunctionalWeather/) for a better (but currently outdated) example. 
 
-You want your run function to process the current state and possible input, and return any desired outputs **as fast as possible**. This function is the basis of your application and will be run, sychronously, every time there is a new input.
+You want your run function to process the current state and input, and return any desired outputs **as fast as possible**. This function is the basis of your application and will be run, sychronously, every time there is a new input.
 It should not do any async operations, handle timing, or block the thread it's running on in any way.
 
 However, one of the biggest benefits to writing pure functional code with immutable value types only, is that it makes multi-threading incredibly easy and safe. To take advantage of that, I would create an AsyncIO type that can run a pure functional closure on a background thread within an IO Handler. The result being passed back to the top-level function as an input. The closure can capture any state from within the run function, as it's all immutable and thread-safe!

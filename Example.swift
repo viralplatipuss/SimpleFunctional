@@ -67,7 +67,7 @@ final class AppIOHandler: BaseIOHandler<AppIO> {
 // Create and start an impure app, wrapping the pure app and the app's IO handler.
 // This should be done as early in the application as possible, with the impureApp property being kept alive by the AppDelegate or similar.
 
-// let impureApp = ImpureApp(pureApp: App(), ioHandlerBuilder: { AppIOHandler(runInputClosure: $0) })
+// let impureApp = ImpureApp(pureAppType: App.self, ioHandlerBuilder: { AppIOHandler(runInputClosure: $0) })
 // impureApp.start()
 
 
@@ -119,14 +119,16 @@ struct AppIO: IO {
 struct App: PureAppProviding {
     typealias IOType = AppIO
     
-    /// The run function is called with an input, and returns an updated app and any outputs to request.
+    /// The start function is called to create and start an app,
+    /// with its initial outputs.
+    static func start() -> AppAndOutputs {
+        (App(), [.console(.print(message: "Hello, World!"))])
+    }
+ 
+    /// The run function is called with an input, when one is ready, and returns an updated app and any outputs to request.
     /// The outputs are then run in the impure code outside of this app, which will then run this function again on the new app state, with any inputs that were generated.
-    func run(input: Input?) -> (app: Self, outputs: [Output])? {
-        guard let _ = input else {
-            return (self, [.console(.print(message: "Hello World!"))])
-        }
-        
-        return nil
+    func run(input: Input) -> AppAndOutputs {
+        (self, [])
     }    
 }
 
