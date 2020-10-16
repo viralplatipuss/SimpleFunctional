@@ -164,7 +164,7 @@ Call **start()** to begin the app.
 ```swift
 class AppDelegate {
 
-    let impureApp = ImpureApp(pureApp: App(), ioHandler: AppIOHandler())
+    let impureApp = ImpureApp(pureAppType: App.self, ioHandler: AppIOHandler())
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         impureApp.start()
